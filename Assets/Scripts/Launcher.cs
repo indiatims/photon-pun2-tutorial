@@ -10,6 +10,7 @@ namespace com.kalyan.photontut
     public class Launcher : MonoBehaviourPunCallbacks
     {
         string gameVersion = "1";
+        bool isConnecting;
 
         [SerializeField]
         private byte maxPlayersPerRoom = 6;
@@ -38,7 +39,7 @@ namespace com.kalyan.photontut
             }
             else
             {
-                PhotonNetwork.ConnectUsingSettings();
+                isConnecting = PhotonNetwork.ConnectUsingSettings();
                 PhotonNetwork.GameVersion = gameVersion;
             }
         }
@@ -47,8 +48,13 @@ namespace com.kalyan.photontut
 
         public override void OnConnectedToMaster()
         {
-            print("OnConnectedToMaster");
-            PhotonNetwork.JoinRandomRoom();
+            if (isConnecting)
+            {
+                isConnecting = false;
+                print("OnConnectedToMaster");
+            
+                PhotonNetwork.JoinRandomRoom();
+            }
         }
 
         public override void OnDisconnected(DisconnectCause cause)
@@ -61,6 +67,14 @@ namespace com.kalyan.photontut
         public override void OnJoinedRoom()
         {
             print("Joined room");
+            if (PhotonNetwork.CurrentRoom.PlayerCount == 1)
+            {
+                Debug.Log("We load the 'Room for 1' ");
+
+                // #Critical
+                // Load the Room Level.
+                PhotonNetwork.LoadLevel("Room for 1");
+            }
         }
 
         public override void OnJoinRandomFailed(short returnCode, string message)
